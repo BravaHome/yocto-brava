@@ -1,0 +1,78 @@
+From d3df9d6f77590f46da199ca96e4f12149843b92a Mon Sep 17 00:00:00 2001
+From: Rudolf J Streif <rudolf.streif@ibeeto.com>
+Date: Thu, 16 Dec 2021 12:17:23 -0800
+Subject: [PATCH 1/1] Enabling interrupts for PCA957x
+
+PCA957x GPIO extenders have a hardware interrupt mask register.
+When the cip comes out of reset all interrupts are masked and
+hence no interrupt is ever generated on the interrupt line.
+Enabling interrupts for a particular IO line did not write the
+chip's mask register.
+
+Signed-off-by: Rudolf J Streif <rudolf.streif@ibeeto.com>
+---
+ drivers/gpio/gpio-pca953x.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpio/gpio-pca953x.c b/drivers/gpio/gpio-pca953x.c
+index 825b362eb..d7357bcb5 100644
+--- a/drivers/gpio/gpio-pca953x.c
++++ b/drivers/gpio/gpio-pca953x.c
+@@ -204,6 +204,7 @@ struct pca953x_reg_config {
+ 	int output;
+ 	int input;
+ 	int invert;
++	int mask;
+ };
+ 
+ static const struct pca953x_reg_config pca953x_regs = {
+@@ -218,6 +219,7 @@ static const struct pca953x_reg_config pca957x_regs = {
+ 	.output = PCA957X_OUT,
+ 	.input = PCA957X_IN,
+ 	.invert = PCA957X_INVRT,
++	.mask = PCA957X_MSK,
+ };
+ 
+ struct pca953x_chip {
+@@ -259,6 +261,7 @@ static int pca953x_bank_shift(struct pca953x_chip *chip)
+ #define PCA957x_BANK_BUSHOLD	BIT(2)
+ #define PCA957x_BANK_CONFIG	BIT(4)
+ #define PCA957x_BANK_OUTPUT	BIT(5)
++#define PCA957x_BANK_MASK	BIT(6)
+ 
+ #define PCAL9xxx_BANK_IN_LATCH	BIT(8 + 2)
+ #define PCAL9xxx_BANK_PULL_EN	BIT(8 + 3)
+@@ -330,7 +333,7 @@ static bool pca953x_readable_register(struct device *dev, unsigned int reg)
+ 	} else {
+ 		bank = PCA957x_BANK_INPUT | PCA957x_BANK_OUTPUT |
+ 		       PCA957x_BANK_POLARITY | PCA957x_BANK_CONFIG |
+-		       PCA957x_BANK_BUSHOLD;
++		       PCA957x_BANK_BUSHOLD | PCA957x_BANK_MASK;
+ 	}
+ 
+ 	if (chip->driver_data & PCA_PCAL) {
+@@ -352,7 +355,8 @@ static bool pca953x_writeable_register(struct device *dev, unsigned int reg)
+ 			PCA953x_BANK_CONFIG;
+ 	} else {
+ 		bank = PCA957x_BANK_OUTPUT | PCA957x_BANK_POLARITY |
+-			PCA957x_BANK_CONFIG | PCA957x_BANK_BUSHOLD;
++			PCA957x_BANK_CONFIG | PCA957x_BANK_BUSHOLD |
++			PCA957x_BANK_MASK;
+ 	}
+ 
+ 	if (chip->driver_data & PCA_PCAL)
+@@ -714,6 +718,11 @@ static void pca953x_irq_bus_sync_unlock(struct irq_data *d)
+ 		pca953x_write_regs(chip, PCAL953X_INT_MASK, irq_mask);
+ 	}
+ 
++	if (PCA_CHIP_TYPE(chip->driver_data) == PCA957X_TYPE) {
++		bitmap_complement(irq_mask, chip->irq_mask, gc->ngpio);
++		pca953x_write_regs(chip, PCA957X_MSK, irq_mask);
++	}
++
+ 	/* Switch direction to input if needed */
+ 	pca953x_read_regs(chip, chip->regs->direction, reg_direction);
+ 
+-- 
+2.31.1
+

@@ -1,0 +1,7 @@
+[Unit]
+Description=Mount media on %i
+
+[Service]
+Type=forking
+GuessMainPID=no
+ExecStart=/etc/udev/scripts/media-automount.sh %I

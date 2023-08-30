@@ -1,0 +1,22 @@
+[Unit]
+Description=Middleby UI service
+After=multi-user.target getty@tty1.service system.slice mdb_usb.service mdb_wifi.service mdb_update.service mdb_watchdog.service
+Requires=getty@tty1.service mdb_usb.service mdb_wifi.service mdb_update.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=synesso
+Group=synesso
+AmbientCapabilities=CAP_SYS_TIME
+Nice=-20
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=99
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+ExecStartPre=/bin/sleep 5
+ExecStart=/opt/middleby/scripts/middleby_ui.sh start
+ExecStop=/opt/middleby/scripts/middleby_ui.sh stop
+
+[Install]
+WantedBy=multi-user.target

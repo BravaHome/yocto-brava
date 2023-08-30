@@ -1,0 +1,11 @@
+[Unit]
+Description=KitchenOS Agent
+After=dbus.service NetworkManager.service bluetooth.service
+Requires=network.target bluetooth.target
+
+[Service]
+ExecStart=/usr/bin/kos-agent
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

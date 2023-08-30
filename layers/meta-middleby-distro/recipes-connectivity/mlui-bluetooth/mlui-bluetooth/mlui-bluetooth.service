@@ -1,0 +1,15 @@
+[Unit]
+Description=Attach EA 1MW BT Module
+Before=bluetooth.service
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/hciattach /dev/ttyS1 bcm43xx 115200 flow
+ExecStartPost=/usr/bin/hciconfig hci0 up
+ExecStartPost=/usr/bin/bdaddr -i hci0 DE:AD:BE:EF:DE:AD
+ExecStartPost=/usr/bin/hciconfig hci0 reset
+ExecStartPost=/usr/bin/hciconfig hci0 up
+
+[Install]
+WantedBy=multi-user.target
+

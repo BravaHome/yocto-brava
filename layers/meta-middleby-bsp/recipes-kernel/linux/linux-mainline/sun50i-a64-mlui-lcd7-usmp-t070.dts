@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// Copyright (C) 2021 Rudolf J Streif <rudolf.streif@ibeeto.com>
+// Based on work of Jagan Teki <jteki@openedev.com>
+
+/dts-v1/;
+
+#include "sun50i-a64.dtsi"
+#include "sun50i-a64-cpu-opp.dtsi"
+#include "sun50i-a64-mlui.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+	compatible = "middleby,mlui-lcd7-usmp-t070", "middleby,mlui", "allwinner,sun50i-a64";
+};
+
+
+&panel_rgb {
+    width-mm = <155>;
+    height-mm = <94>;
+
+    panel-timing {
+        /* 1280x768 @ 60Hz */
+        clock-frequency = <66400000>;
+        hactive = <1280>;
+        hback-porch = <42>;
+        hfront-porch = <42>;
+        hsync-len = <100>;
+        vactive = <768>;
+        vback-porch = <23>;
+        vfront-porch = <22>;
+        vsync-len = <10>;
+    };
+};
+
+&backlight {
+    brightness-levels = <0 60 65 70 75 80 85 90 95 100>;
+    default-brightness-level = <5>;
+};
+
+&i2c1 {
+    touchscreen@2a {
+        compatible = "eeti,egalax_i2c";
+        reg = <0x2a>;
+        int-gpios = <&pio 7 7 GPIO_ACTIVE_LOW>; /* PH7 */
+    };
+};
+
+&pca0 {
+    ssr-out-1-hog {
+        gpio-hog;
+        gpios = <5 GPIO_ACTIVE_HIGH>;
+        output-low;
+    };
+
+    ssr-out-3-hog {
+        gpio-hog;
+        gpios = <7 GPIO_ACTIVE_HIGH>;
+        output-low;
+    };
+};
+

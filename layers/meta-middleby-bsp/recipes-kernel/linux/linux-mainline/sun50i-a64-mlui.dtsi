@@ -1,0 +1,531 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// Copyright (C) 2021 Rudolf J Streif <rudolf.streif@ibeeto.com>
+// Based on work of Jagan Teki <jteki@openedev.com>
+
+#include "sun50i-a64.dtsi"
+#include "sun50i-a64-cpu-opp.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+        model = "Middleby MLUI";
+        compatible = "middleby,mlui", "allwinner,sun50i-a64";
+
+        aliases {
+                serial0 = &uart0;
+        };
+
+        panel_rgb: panel-rgb {
+                compatible = "panel-dpi";
+                backlight = <&backlight>;
+                power-supply = <&reg_dldo2>;
+                enable-gpios = <&pio 3 24 GPIO_ACTIVE_HIGH>; /* PD24 */
+
+                port {
+                        panel_rgb_in: endpoint {
+                                remote-endpoint = <&tcon0_out_panel>;
+                        };
+                };
+        };
+
+        chosen {
+                stdout-path = "serial0:115200n8";
+        };
+
+        backlight: backlight {
+                compatible = "pwm-backlight";
+                pwms = <&pwm 0 5000000 0>;
+                power-supply = <&reg_dcdc1>;
+                brightness-levels = <0 1 2 4 8 16 32 64 128 255>;
+                default-brightness-level = <5>;
+                enable-gpios = <&pio 3 23 GPIO_ACTIVE_HIGH>; /* PD23 LCD-BL_EN */
+        };
+
+        leds {
+                compatible = "gpio-leds";
+                vdisp {
+                       label = "mlui:vdisp-enable";
+                       gpios = <&pio 1 6 GPIO_ACTIVE_HIGH>; /* PB6 12 V BOOST */
+                       default-state = "on";
+                };
+                buzzer {
+                    label = "mlui:piezo-buzzer";
+                    gpios = <&pio 7 6 GPIO_ACTIVE_HIGH>; /* PH6 PIEZO BUZZER */
+                    default-state = "off";
+                };
+                pa_boost {
+                    label = "mlui:pa-boost";
+                    gpios = <&pio 2 2 GPIO_ACTIVE_HIGH>; /* PC2 AUDIO AMP BOOST */
+                    default-state = "on";
+                };
+                pa_feedback {
+                    label = "mlui:pa-feedback";
+                    gpios = <&pio 2 3 GPIO_ACTIVE_HIGH>; /* PC3 AUDIO AMP FEEDBACK SELECT */
+                    default-state = "off";
+                };
+                pa_ss_ff {
+                    label = "mlui:pa-ss-ff";
+                    gpios = <&pio 2 4 GPIO_ACTIVE_HIGH>; /* PC4 AUDIO AMP MODULATION SELECT */
+                    default-state = "off";
+                };
+                bluetooth {
+                    label = "mlui:bluetooth";
+                    gpios = <&r_pio 0 8 GPIO_ACTIVE_HIGH>; /* PL8 BLUETOOTH ENABLE */
+                    default-state = "on";
+                };
+        };
+
+        speaker_amp: audio-amplifier {
+            compatible = "simple-audio-amplifier";
+            enable-gpios = <&pio 2 0 GPIO_ACTIVE_HIGH>; /* PC0 AUDIO AMP ENABLE */
+            sound-name-prefix = "Speaker Amp";
+            status = "okay";
+        };
+
+        reg_usb1_vbus: usb1-vbus {
+                compatible = "regulator-fixed";
+                regulator-name = "usb1-vbus";
+                regulator-min-microvolt = <5000000>;
+                regulator-max-microvolt = <5000000>;
+                regulator-boot-on;
+                gpio = <&pio 1 4 GPIO_ACTIVE_LOW>; /* PB4 */
+                status = "okay";
+        };
+
+	wifi_pwrseq: wifi_pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&r_pio 0 2 GPIO_ACTIVE_LOW>; /* PL2 */
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&reg_dcdc2>;
+};
+
+&cpu1 {
+	cpu-supply = <&reg_dcdc2>;
+};
+
+&cpu2 {
+	cpu-supply = <&reg_dcdc2>;
+};
+
+&cpu3 {
+	cpu-supply = <&reg_dcdc2>;
+};
+
+&codec {
+        status = "okay";
+};
+
+&codec_analog {
+        cpvdd-supply = <&reg_eldo1>;
+        status = "okay";
+};
+
+&dai {
+        status = "okay";
+};
+
+&de {
+	status = "okay";
+};
+
+&ehci0 {
+	status = "okay";
+};
+
+&ehci1 {
+	status = "okay";
+};
+
+&i2c0 {
+        status = "okay";
+
+        usb2422@2c {
+                compatible = "microchip,usb2422";
+                reg = <0x2c>;
+        };
+
+        pca0: pca9574@20 {
+                compatible = "nxp,pca9574";
+                reg = <0x20>;
+                gpio-controller;
+                #gpio-cells = <2>;
+                interrupt-parent = <&pio>;
+                interrupts = <7 11 IRQ_TYPE_LEVEL_LOW>; /* PH11 */
+                gpio-line-names = "br_in_1", "br_out_1", "ssr_in_1", "ssr_in_2",
+                                  "ssr_in_3", "ssr_out_1", "ssr_out_2", "ssr_out_3";
+        };
+
+        rv8263@51 {
+                compatible = "microcrystal,rv8263";
+                reg = <0x51>;
+        };
+
+        rv4162@68 {
+                compatible = "microcrystal,rv4162";
+                reg = <0x68>;
+        };
+
+        sensor@48 {
+                compatible = "st,stlm75";
+                reg = <0x48>;
+        };
+};
+
+&rtc {
+    status = "disabled";
+};
+
+&i2c1 {
+    status = "okay";
+};
+
+&simplefb_lcd {
+        panel-supply = <&reg_dldo2>;
+	status = "okay";
+};
+
+&tcon0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&lcd_rgb666_pins>;
+        status = "okay";
+};
+
+&tcon0_out {
+        tcon0_out_panel: endpoint {
+                remote-endpoint = <&panel_rgb_in>;
+        };
+};
+
+&mixer0 {
+        status = "okay";
+};
+
+&mmc0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins>;
+	vmmc-supply = <&reg_dcdc1>;
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>;
+	disable-wp;
+	bus-width = <4>;
+	status = "okay";
+};
+
+&mmc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc1_pins>;
+	vmmc-supply = <&reg_dcdc1>;
+	vqmmc-supply = <&reg_dldo4>;
+	mmc-pwrseq = <&wifi_pwrseq>;
+	bus-width = <4>;
+	non-removable;
+	status = "okay";
+
+	brcmf: wifi@1 {
+		reg = <1>;
+		compatible = "brcm,bcm4329-fmac";
+                interrupt-parent = <&r_pio>;
+                interrupts = <0 3 IRQ_TYPE_LEVEL_LOW>; /* PL3 */
+                interrupt-names = "host-wake";
+	};
+};
+
+&mmc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_pins>;
+	vmmc-supply = <&reg_dcdc1>;
+	vqmmc-supply = <&reg_dcdc1>;
+	bus-width = <8>;
+	non-removable;
+	cap-mmc-hw-reset;
+	status = "okay";
+};
+
+&pwm {
+	status = "okay";
+};
+
+&pwm_pin {
+        bias-pull-up;
+};
+
+
+&ohci0 {
+	status = "okay";
+};
+
+&ohci1 {
+	status = "okay";
+};
+
+&pio {
+	vcc-pc-supply = <&reg_dcdc1>;
+	vcc-pd-supply = <&reg_dcdc1>;
+	vcc-pe-supply = <&reg_dldo3>;
+	vcc-pg-supply = <&reg_dldo4>;
+
+    ctp_pins: ctp-pins {
+		pins = "PH7", "PH8";
+        function = "ctp";
+    };
+
+    uart3_ph_pins: uart3-ph-pins {
+        pins = "PH4", "PH5";
+        function = "uart3";
+    };
+
+    mlui_hwrev_pins: mlui-hwrev-pins {
+		pins = "PG10", "PG11", "PG12";
+		function = "hwrev";
+		gpio-line-names = "HWREV0", "HWREV2", "HWREV01";
+	};
+};
+
+&r_pio {
+	/*
+	 * FIXME: We can't add that supply for now since it would
+	 * create a circular dependency between pinctrl, the regulator
+	 * and the RSB Bus.
+	 *
+	 * vcc-pl-supply = <&reg_aldo2>;
+	 */
+};
+
+&pio {
+	vcc-pa-supply = <&reg_dcdc1>;
+	vcc-pb-supply = <&reg_dcdc1>;
+	vcc-pc-supply = <&reg_dcdc1>;
+	vcc-pd-supply = <&reg_dcdc1>;
+	vcc-pe-supply = <&reg_aldo1>;
+	vcc-pf-supply = <&reg_dcdc1>;
+	vcc-pg-supply = <&reg_dldo4>;
+	vcc-ph-supply = <&reg_dcdc1>;
+};
+
+&r_rsb {
+	status = "okay";
+
+	axp803: pmic@3a3 {
+		compatible = "x-powers,axp803";
+		reg = <0x3a3>;
+		interrupt-parent = <&r_intc>;
+		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+		x-powers,drive-vbus-en;	/* set N_VBUSEN as output pin */
+	};
+};
+
+/* VCC-PL is powered by aldo2 but we cannot add it as the RSB */
+/* interface used to talk to the PMIC in on the PL pins */
+/* &r_pio { */
+/*	vcc-pl-supply = <&reg_aldo2>; */
+/* }; */
+
+#include "axp803.dtsi"
+
+&ac_power_supply {
+	status = "okay";
+};
+
+&battery_power_supply {
+	status = "okay";
+};
+
+&reg_aldo1 {
+	regulator-always-on;
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+	regulator-name = "vcc-pe";
+};
+
+&reg_aldo2 {
+	regulator-always-on;
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-name = "vcc-pl";
+};
+
+&reg_aldo3 {
+	regulator-always-on;
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-name = "vcc-pll-avcc";
+};
+
+&reg_dcdc1 {
+	regulator-always-on;
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-name = "vcc-3v3";
+};
+
+&reg_dcdc2 {
+	regulator-always-on;
+	regulator-min-microvolt = <1040000>;
+	regulator-max-microvolt = <1300000>;
+	regulator-name = "vdd-cpux";
+};
+
+/* DCDC3 is polyphased with DCDC2 */
+
+/*
+ * The board uses DDR3L DRAM chips. 1.36V is the closest to the nominal
+ * 1.35V that the PMIC can drive.
+ */
+&reg_dcdc5 {
+	regulator-always-on;
+	regulator-min-microvolt = <1360000>;
+	regulator-max-microvolt = <1360000>;
+	regulator-name = "vcc-ddr3";
+};
+
+&reg_dcdc6 {
+	regulator-always-on;
+	regulator-min-microvolt = <1100000>;
+	regulator-max-microvolt = <1100000>;
+	regulator-name = "vdd-sys";
+};
+
+&reg_dldo1 {
+	regulator-always-on;
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-name = "vcc-sensor";
+};
+
+&reg_dldo2 {
+	regulator-always-on;
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-name = "vcc-mipi";
+};
+
+&reg_dldo3 {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+	regulator-name = "vcc-avdd-csi";
+};
+
+&reg_dldo4 {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-name = "vcc-wifi-io";
+};
+
+&reg_drivevbus {
+	regulator-name = "usb0-vbus";
+	status = "okay";
+};
+
+&reg_eldo1 {
+	regulator-always-on;
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-name = "cpvdd";
+};
+
+&reg_eldo3 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-name = "vcc-dvdd-csi";
+};
+
+&reg_fldo1 {
+	regulator-min-microvolt = <1200000>;
+	regulator-max-microvolt = <1200000>;
+	regulator-name = "vcc-1v2-hsic";
+};
+
+/*
+ * The A64 chip cannot work without this regulator off, although
+ * it seems to be only driving the AR100 core.
+ * Maybe we don't still know well about CPUs domain.
+ */
+&reg_fldo2 {
+	regulator-always-on;
+	regulator-min-microvolt = <1100000>;
+	regulator-max-microvolt = <1100000>;
+	regulator-name = "vdd-cpus";
+};
+
+&reg_rtc_ldo {
+	regulator-always-on;
+	regulator-name = "vcc-rtc";
+};
+
+&reg_ldo_io0 {
+	regulator-always-on;
+	regulator-name = "vcc-ctp";
+	status = "okay";
+};
+
+/* console */
+&uart0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&uart0_pb_pins>;
+        status = "okay";
+};
+
+/* Bluetooth */
+&uart1 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&uart1_pins>, <&uart1_rts_cts_pins>;
+        uart-has-rtscts;
+        status = "okay";
+};
+
+/* RS485 BR_IO */
+&uart2 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&uart2_pins>;
+        rts-gpios = <&pio 1 2 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+};
+
+/* RS485 SSR_IO */
+&uart3 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&uart3_ph_pins>;
+        rts-gpios = <&pio 1 3 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+};
+
+&usb_otg {
+	dr_mode = "otg";
+	status = "okay";
+};
+
+&usbphy {
+	usb0_id_det-gpios = <&pio 7 9 GPIO_ACTIVE_HIGH>; /* PH9 */
+	usb0_vbus-supply = <&reg_drivevbus>;
+	usb1_vbus-supply = <&reg_usb1_vbus>;
+	status = "okay";
+};
+
+&sound {
+        simple-audio-card,aux-devs = <&codec_analog>, <&speaker_amp>;
+        simple-audio-card,widgets = "Microphone", "Internal Microphone Left",
+                                    "Microphone", "Internal Microphone Right",
+                                    "Headphone", "Headphone Jack",
+                                    "Speaker", "Internal Speaker";
+        simple-audio-card,routing =
+                        "Left DAC", "DACL",
+                        "Right DAC", "DACR",
+                        "Speaker Amp INL", "LINEOUT",
+                        "Speaker Amp INR", "LINEOUT",
+                        "Internal Speaker", "Speaker Amp OUTL",
+                        "Internal Speaker", "Speaker Amp OUTR",
+                        "Headphone Jack", "HP",
+                        "ADCL", "Left ADC",
+                        "ADCR", "Right ADC",
+                        "Internal Microphone Left", "MBIAS",
+                        "MIC1", "Internal Microphone Left",
+                        "Internal Microphone Right", "HBIAS",
+                        "MIC2", "Internal Microphone Right";
+        status = "okay";
+};
+
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=MLUI Reboot Update and Wifi start .
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/root/startup_stage1.sh
+
+[Install]
+WantedBy=multi-user.target
+
+

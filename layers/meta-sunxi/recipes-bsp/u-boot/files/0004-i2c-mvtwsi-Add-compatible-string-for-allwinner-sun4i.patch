@@ -1,0 +1,32 @@
+From eb31a4a141bf401f92426bd053a965022e47290d Mon Sep 17 00:00:00 2001
+From: Chris Morgan <macromorgan@hotmail.com>
+Date: Fri, 7 Jan 2022 11:52:54 -0600
+Subject: [PATCH] i2c: mvtwsi: Add compatible string for allwinner,
+ sun4i-a10-i2c
+
+This adds a compatible string for the Allwinner Sun4i-A10 I2C
+controller. Without this, boards based on the R8 and A13 (at a
+minimum) fail to boot.
+
+Signed-off-by: Chris Morgan <macromorgan@hotmail.com>
+Acked-by: Akash Gajjar <gajjar04akash@gmail.com>
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ drivers/i2c/mvtwsi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/i2c/mvtwsi.c b/drivers/i2c/mvtwsi.c
+index bad4b1484f..f48a4f25aa 100644
+--- a/drivers/i2c/mvtwsi.c
++++ b/drivers/i2c/mvtwsi.c
+@@ -900,6 +900,7 @@ static const struct dm_i2c_ops mvtwsi_i2c_ops = {
+ static const struct udevice_id mvtwsi_i2c_ids[] = {
+ 	{ .compatible = "marvell,mv64xxx-i2c", },
+ 	{ .compatible = "marvell,mv78230-i2c", },
++	{ .compatible = "allwinner,sun4i-a10-i2c", },
+ 	{ .compatible = "allwinner,sun6i-a31-i2c", },
+ 	{ /* sentinel */ }
+ };
+-- 
+2.34.1
+

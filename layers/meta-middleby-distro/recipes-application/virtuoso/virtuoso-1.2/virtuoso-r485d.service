@@ -1,0 +1,12 @@
+[Unit]
+Description=Start Virtuoso oven application
+After=multi-user.target
+Before=virtuoso-ui.service
+
+[Service]
+ExecStart=/opt/virtuoso/r485d --port 3
+
+[Install]
+WantedBy=multi-user.target
+
+

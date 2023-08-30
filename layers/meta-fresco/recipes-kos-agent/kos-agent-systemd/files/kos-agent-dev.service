@@ -1,0 +1,12 @@
+[Unit]
+Description=KitchenOS Agent Development Auto-Start
+After=kos-agent.service
+Requires=kos-agent.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/bash -c "sleep 30; /home/root/disconnect.sh || true"
+ExecStart=/home/root/start-provision.sh
+
+[Install]
+WantedBy=multi-user.target

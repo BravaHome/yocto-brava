@@ -1,0 +1,9 @@
+
+clear
+setterm --blank 0
+
+# Start Weston
+if [ ! -z "${XDG_RUNTIME_DIR}" ]; then
+  /bin/pidof weston >/dev/null || exec /usr/bin/weston-launch >/dev/null
+fi
+

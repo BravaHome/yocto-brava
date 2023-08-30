@@ -1,0 +1,12 @@
+# MLUI fstab for Viking
+
+/dev/root            /                    auto       defaults              1  1
+proc                 /proc                proc       defaults              0  0
+devpts               /dev/pts             devpts     mode=0620,ptmxmode=0666,gid=5      0  0
+tmpfs                /run                 tmpfs      mode=0755,nodev,nosuid,strictatime 0  0
+tmpfs                /var/volatile        tmpfs      defaults              0  0
+
+# mount /boot and /brava partitions (labels have to match the ones used in wks file)
+LABEL=boot       /boot   vfat    defaults        0       0
+LABEL=data       /brava  ext4    defaults        0       0
+

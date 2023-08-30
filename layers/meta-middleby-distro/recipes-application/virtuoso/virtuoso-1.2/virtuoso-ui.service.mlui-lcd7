@@ -1,0 +1,26 @@
+[Unit]
+Description=Start Virtuoso oven application
+After=multi-user.target
+After=virtuoso-r485d.service
+
+[Service]
+# Use the following for Wayland/Weston backend
+Environment="QT_QPA_PLATFORM=wayland"
+Environment="XDG_RUNTIME_DIR=/run"
+
+# Use the following for EGLFS backend
+#Environment="QT_QPA_PLATFORM=eglfs"
+#Environment="QT_QPA_EGLFS_WIDTH=1024"
+#Environment="QT_QPA_EGLFS_HEIGHT=600"
+#Environment="QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS=/dev/input/event0:invertx"
+
+# Use Qt Rendering Hardwware Interface (RHI)
+Environment="QSG_RHI=1"
+
+ExecStartPre=/bin/echo 10 > /sys/class/backlight/backlight/brightness
+ExecStart=/opt/virtuoso/virtuoso
+
+[Install]
+WantedBy=multi-user.target
+
+

@@ -1,0 +1,12 @@
+[Unit]
+Description=Audio Subsystem Setup
+After=multi-user.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/root
+ExecStart=/usr/bin/audiosetup.sh > /dev/null
+
+[Install]
+WantedBy=multi-user.target
+

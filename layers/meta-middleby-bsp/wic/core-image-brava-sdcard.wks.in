@@ -1,0 +1,26 @@
+# short-description: Create SD card / eMMC image for Brava configuration
+# long-description:
+# Create image for SD card or eMMC with Brava partition layout.
+#
+# The disk layout used is:
+#  - --------------------------- ------ --------- ---------- --------- --------- ------ 
+# | | u-boot-sunxi-with-spl.bin | boot | kernelA | kernel B | rootfsA | rootfsB | data |
+#  - --------------------------- ------ --------- ---------- --------- --------- ------
+# ^ ^                           ^      ^         ^          ^         ^         ^      ^
+# | |                           |      |         |          |         |         |      |
+# 0 |                         2MiB   +40MiB    +40MiB     +40MiB    +1GiB     +1GiB  +5GiB
+#   8KiB 
+#
+# The layout supports A/B banking for software updates. The boot partition contains a u-boot
+# script that can be used to either boot from bank A (kernelA/rootfsA) or bank B (kernelB/rootfsB).
+#
+
+part u-boot --source rawcopy --sourceparams="file=u-boot-sunxi-with-spl.bin" --no-table --align 8
+part /boot  --source bootimg-partition --use-uuid --fstype=vfat --label boot    --align 2048 --fixed-size 40 --active
+part        --source bootimg-partition --use-uuid --fstype=ext4 --label kernelA --align 2048 --fixed-size 40
+part        --source bootimg-partition --use-uuid --fstype=ext4 --label kernelB --align 2048 --fixed-size 40
+part /      --source rootfs            --use-uuid --fstype=ext4 --label rootfsA --align 2048 --size 1000
+part                                   --use-uuid --fstype=ext4 --label rootfsB --align 2048 --size 1000
+part /brava                            --use-uuid --fstype=ext4 --label data    --align 2048 --size 3000
+
+bootloader --ptable msdos

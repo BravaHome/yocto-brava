@@ -1,0 +1,1 @@
+AUTOMOUNT_OPTS='errors=remount-ro,relatime,user,rw,gid=6,dmask=0000'

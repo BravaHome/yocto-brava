@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// Copyright (C) 2021 Rudolf J Streif <rudolf.streif@ibeeto.com>
+// Based on work of Jagan Teki <jteki@openedev.com>
+
+/dts-v1/;
+
+#include "sun50i-a64.dtsi"
+#include "sun50i-a64-cpu-opp.dtsi"
+#include "sun50i-a64-mlui.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+	compatible = "middleby,mlui-lcd5", "middleby,mlui", "allwinner,sun50i-a64";
+};
+
+&panel_rgb {
+    width-mm = <108>;
+    height-mm = <65>;
+
+    panel-timing {
+        /* 800x480 @ 60Hz */
+        /* clock-frequency = <25000000>; */
+        clock-frequency = <27000000>;
+        hactive = <800>;
+        hback-porch = <8>;
+        hfront-porch = <8>;
+        hsync-len = <4>;
+        vactive = <480>;
+        vback-porch = <8>;
+        vfront-porch = <8>;
+        vsync-len = <4>;
+    };
+};
+
+&backlight {
+    brightness-levels = <0 20 30 40 50 60 70 80 90 100>;
+    default-brightness-level = <5>;
+};
+
+&i2c1 {
+    touchscreen@4a {
+        compatible = "atmel,maxtouch";
+        reg = <0x4a>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&ctp_pins>;
+        interrupt-parent = <&pio>;
+        interrupts = <7 7 IRQ_TYPE_EDGE_FALLING>; /* PH7 */
+        reset-gpios = <&pio 7 8 GPIO_ACTIVE_HIGH>; /* PH8 */
+    };
+};

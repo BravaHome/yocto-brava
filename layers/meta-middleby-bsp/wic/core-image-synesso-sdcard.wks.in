@@ -1,0 +1,20 @@
+# short-description: Create SD card / eMMC image for Synesso configuration
+# long-description:
+# Create image for SD card or eMMC with Synesso partition layout.
+#
+# The disk layout used is:
+#  - --------------------------- ------ -------- --------
+# | | u-boot-sunxi-with-spl.bin | boot | kernel | rootfs |
+#  - --------------------------- ------ -------- --------
+# ^ ^                           ^      ^        ^        ^
+# | |                           |      |        |        |
+# 0 |                         2MiB   +40MiB   +40MiB   +1GiB
+#   8KiB 
+#
+
+part u-boot --source rawcopy --sourceparams="file=u-boot-sunxi-with-spl.bin" --no-table --align 8
+part /boot  --source bootimg-partition --use-uuid --fstype=vfat --label boot   --align 2048 --fixed-size 40 --active
+part        --source bootimg-partition --use-uuid --fstype=ext4 --label kernel --align 2048 --fixed-size 40
+part /      --source rootfs            --use-uuid --fstype=ext4 --label rootfs --align 2048 --size 4000
+
+bootloader --ptable msdos

@@ -1,0 +1,10 @@
+# meta-kos
+
+## Dependencies
+
+* URI: git://git.openembedded.org/openembedded-core
+  * layers: meta
+  * branch: master
+* URI: git://git.openembedded.org/openembedded-core
+  * layers: meta-networking
+  * branch: master
